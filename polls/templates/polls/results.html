@@ -1,19 +1,27 @@
-<h1>{{ question.question_text }}</h1>
+<html>
+<body style="background-color:pink;">
+    
+    <h1>{{ question.question_text }}</h1>
 
-<ul>
-<table>
-  <tr>
-    <th>Choices</th>
-    <th>Votes</th>
-  </tr>
-    {% for choice in question.choice_set.all %}
-            <tr>
-                <td>{{ choice.choice_text }}</td>
-                <td>{{ choice.votes }}<a> vote </a></td>
-            </tr>
-    {% endfor %}
-</table>
-</ul>
-
-<a href="{% url 'polls:detail' question.id %}">Vote again?</a>
-<a href="{% url 'polls:index' %}"> Back to Polls </a>
+    <ul>
+    <table>
+    <tr>
+        <th>Choices</th>
+        <th>Votes</th>
+    </tr>
+        {% for choice in question.choice_set.all %}
+                <tr>
+                    <td>{{ choice.choice_text }}</td>
+                    <td>{{ choice.votes }}<a> vote </a></td>
+                </tr>
+        {% endfor %}
+    </table>
+    </ul>
+    <button>
+         <a href="{% url 'polls:detail' question.id %}">Vote again?</a>
+    </button>
+    <button>
+        <a href="{% url 'polls:index' %}"> Back to Polls </a>
+    </button>
+</body>
+</html>

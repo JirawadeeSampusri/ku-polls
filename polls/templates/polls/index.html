@@ -1,27 +1,36 @@
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
-{% if messages %}
-<ul class="messages">
-  {% for msg in messages %}
-    <li class="{{msg.tags}}">{{ msg }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
-{% if latest_question_list %}
-    <ul>
-    {% for question in latest_question_list %}
-            <p >{{ question.question_text }}</p>
-            {% if question.can_vote %}
-            <a href="{% url 'polls:detail' question.id %}">vote</a>
-            {% endif %}
-            <a href="{% url 'polls:results' question.id %}">result</a>
-
+<html>
+<body style="background-color:powderblue;">
+    <p style="font-size:39px">
+        Poll Questions
+    </p>
+    {% if messages %}
+    <ul class="messages">
+    {% for msg in messages %}
+        <li class="{{msg.tags}}">{{ msg }}</li>
     {% endfor %}
-
     </ul>
-{% else %}
-    <p>No polls are available.</p>
-{% endif %}
+    {% endif %}
+    {% if latest_question_list %}
+        <ul>
+        {% for question in latest_question_list %}
+                <p >{{ question.question_text }}</p>
+                {% if question.can_vote %}
+                <button>
+                    <a href="{% url 'polls:detail' question.id %}">vote</a> 
+                </button>
+                {% endif %}
+                <button>
+                    <a href="{% url 'polls:results' question.id %}">result</a>
+                </button>
+
+        {% endfor %}
+
+        </ul>
+    {% else %}
+        <p>No polls are available.</p>
+    {% endif %}
+</body>
+</html>
+
 
 
