@@ -1,10 +1,12 @@
 from django.http import Http404, HttpResponseRedirect, HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from .models import Question, Choice
 from django.template import loader
 from django.views import generic
 from django.utils import timezone
+from django.contrib import messages
+
 
 
 class IndexView(generic.ListView):
@@ -16,12 +18,13 @@ class IndexView(generic.ListView):
         Return the last five published questions (not including those set to be
         published in the future).
         """
-        return Question.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')[:5]
+        return Question.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')
 
 
 class DetailView(generic.DetailView):
     model = Question
     template_name = 'polls/detail.html'
+
     def get_queryset(self):
         """
         Excludes any questions that aren't published yet.
@@ -35,7 +38,7 @@ class ResultsView(generic.DetailView):
 
 
 def index(request):
-    latest_question_list = Question.objects.order_by('-pub_date')[:5]
+    latest_question_list = Question.objects.order_by('-pub_date')[:]
     template = loader.get_template('polls/index.html')
     context = {'latest_question_list': latest_question_list,}
     return HttpResponse(template.render(context, request))
@@ -64,5 +67,16 @@ def vote(request, question_id):
         selected_choice.save()
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
 
+
     context = {'latest_question_list': latest_question_list,}
     return HttpResponse(template.render(context, request))
+
+def vote_for_poll(request, pk):
+    q = Question.objects.get(pk = pk)
+    if q.can_vote() == False:
+        messages.error(request, "poll expires")
+        return redirect('polls:index')
+    return render(request, "polls/detail.html", {"question": q})
+
+
+
