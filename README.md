@@ -1,4 +1,6 @@
 # ku-polls
+[![Build Status](https://travis-ci.com/JirawadeeSampusri/ku-polls.svg?branch=master)](https://travis-ci.com/github/JirawadeeSampusri/ku-polls)
+
 Django application for conduction a poll or survey.
 
 ## Document
