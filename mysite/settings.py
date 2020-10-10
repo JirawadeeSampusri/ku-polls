@@ -17,7 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECRET_KEY = '0n6$t9bxv1vm(p(z&rjc7$lmpl3)t&q2t(7qhpkec(tt(_&znr'
 SECRET_KEY = config('SECRET_KEY',default = "secretkeys")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', cast=bool)
+DEBUG = config('DEBUG', cast=bool, default= True)
 ALLOWED_HOSTS = []
 
 # Application definition
