@@ -1,0 +1,18 @@
+language: python
+
+python: "3.7.2"
+
+git:
+  depth: 1
+
+install:
+  - pip install -r requirements.txt
+
+script:
+  - coverage run manage.py test polls
+
+after_script:
+  - bash <(curl -s https://codecov.io/bash)
+
+after_success:
+  - codecov

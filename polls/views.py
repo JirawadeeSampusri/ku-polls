@@ -79,4 +79,3 @@ def vote_for_poll(request, pk):
     return render(request, "polls/detail.html", {"question": q})
 
 
-
