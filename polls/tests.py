@@ -6,62 +6,82 @@ from .models import Question,Choice
 
 class QuestionModelTests(TestCase):
 
-    def test_was_published_recently_with_future_question(self):
+    def test_is_published_with_future_question(self):
         """
-        was_published_recently() returns False for questions whose pub_date
-        is in the future.
+        is_published() return False if current date is
+        before question's publication date.
         """
-        time = timezone.now() + datetime.timedelta(days=30)
+        time = timezone.now() + datetime.timedelta(days=10)
         future_question = Question(pub_date=time)
-        self.assertIs(future_question.was_published_recently(), False)
+        self.assertIs(future_question.is_published(), False)
 
-    def test_was_published_recently_with_old_question(self): #testว่าคำถามเก่าเป็นที่พึ่งปล่อยหรือไม่
+    def test_is_published_with_old_question(self):
         """
-        was_published_recently() returns False for questions whose pub_date
-        is older than 1 day.
+        is_published() return Ture if current date is
+        after question's publication date.
         """
-        time = timezone.now() - datetime.timedelta(days=1, seconds=1)
+        time = timezone.now() - datetime.timedelta(days=1)
         old_question = Question(pub_date=time)
-        self.assertIs(old_question.was_published_recently(), False)
+        self.assertIs(old_question.is_published(), True)
 
-    def test_was_published_recently_with_recent_question(self):
+    def test_is_published_with_present_question(self):
         """
-        was_published_recently() returns True for questions whose pub_date
-        is within the last day.
+        is_published() return Ture if current date is
+        on question's publication date.
         """
-        time = timezone.now() - datetime.timedelta(hours=23, minutes=59, seconds=59)
-        recent_question = Question(pub_date=time)
-        self.assertIs(recent_question.was_published_recently(), True)
+        time = timezone.now()
+        present_question = Question(pub_date=time)
+        self.assertIs(present_question.is_published(), True)
 
-    def test_published_with_recent_question(self):
+    def test_can_vote_with_now_is_after_pub_date_and_before_end_date(self):
         """
-        is_published_recently() returns True if questions was published .
+        can_vote() return True if you're voting currently is between
+        pub_date and end_date.
         """
-        pub_time = timezone.now() + datetime.timedelta(days=-10)
-        end_time = timezone.now() + datetime.timedelta(days=-7)
-        recent_question = Question(pub_date=pub_time,end_date=end_time)
-        self.assertIs(recent_question.is_published(), True)
+        pub_date = timezone.now() - datetime.timedelta(days=2)
+        end_date = timezone.now() + datetime.timedelta(days=10)
+        now = Question(pub_date=pub_date, end_date=end_date)
+        self.assertIs(now.can_vote(), True)
 
-    def test_can_vote_with_question(self):
+    def test_can_vote_with_now_equal_to_pub_date(self):
         """
-        can_vote() returns True if questions is in the published period .
+        can_vote() return True if you're voting currently is on
+        pub_date.
         """
-        pub_time = timezone.now() + datetime.timedelta(days=-3)
-        end_time = timezone.now() + datetime.timedelta(days=-1)
-        recent_question = Question(pub_date=pub_time,end_date=end_time)
-        self.assertIs(recent_question.can_vote(), False)
-    
-    # def test_question_label(self):
-    #     question = Question.objects.get(id=1)
-    #     field_label = question._meta.get_field('What is your fav food?').verbose_name
-    #     self.assertEquals(field_label,'What is your fav food?')
+        pub_date = timezone.now()
+        end_date = timezone.now() + datetime.timedelta(days=1)
+        now = Question(pub_date=pub_date, end_date=end_date)
+        self.assertIs(now.can_vote(), True)
 
-    # def test_choice_label(self):
-    #     choice = Choice.objects.all()
-    #     field_label = choice._meta.get_field('rice').verbose_name
-    #     self.assertEquals(field_label,'rice')
+    def test_can_vote_with_now_is_before_pub_date(self):
+        """
+        can_vote() return False if you're voting currently is before
+        pub_date.
+        """
+        pub_date = timezone.now() - datetime.timedelta(days=1)
+        end_date = timezone.now()
+        before = Question(pub_date=pub_date, end_date=end_date)
+        self.assertIs(before.can_vote(), False)
 
+    def test_can_vote_with_now_is_after_end_date(self):
+        """
+        can_vote() return False if you're voting currently is after
+        end_date.
+        """
+        pub_date = timezone.now()
+        end_date = timezone.now() - datetime.timedelta(days=1)
+        before = Question(pub_date=pub_date, end_date=end_date)
+        self.assertIs(before.can_vote(), False)
 
+    def test_can_vote_with_now_is_equal_to_end_date(self):
+        """
+        can_vote() return False if you're voting currently is on
+        end_date.
+        """
+        pub_date = timezone.now() + datetime.timedelta(days=1)
+        end_date = timezone.now()
+        before = Question(pub_date=pub_date, end_date=end_date)
+        self.assertIs(before.can_vote(), False)
         
 def create_question(question_text, pub_date, end_date):
     """
@@ -99,38 +119,36 @@ class QuestionIndexViewTests(TestCase):
 
     def test_future_question(self):
         """
-        Questions with a pub_date in the future aren't displayed on
+        Questions with a pub_date in the future aren't displayed on.
         the index page.
         """
-        create_question(question_text="Future question.", days=30)
+        create_question(question_text="Future question.", pub_date=30, end_date=31)
         response = self.client.get(reverse('polls:index'))
-        self.assertContains(response, "No polls are available.")
-        self.assertQuerysetEqual(response.context['latest_question_list'], [])
+        self.assertQuerysetEqual(response.context['latest_question_list'], ['<Question: Future question.>'])
 
     def test_future_question_and_past_question(self):
         """
-        Even if both past and future questions exist, only past questions
+        Even if both past and future questions exist, only past questions.
         are displayed.
         """
-        create_question(question_text="Past question.", days=-30)
-        create_question(question_text="Future question.", days=30)
+        create_question(question_text="Future question.", pub_date=10, end_date=11)
+        create_question(question_text="Past question.", pub_date=-10, end_date=-9)
         response = self.client.get(reverse('polls:index'))
         self.assertQuerysetEqual(
-        response.context['latest_question_list'],
-        ['<Question: Past question.>']
+            response.context['latest_question_list'],
+            ['<Question: Future question.>', '<Question: Past question.>']
         )
 
     def test_two_past_questions(self):
-        """
-        The questions index page may display multiple questions.
-        """
-        create_question(question_text="Past question 1.", days=-30)
-        create_question(question_text="Past question 2.", days=-5)
+        """The questions index page may display multiple questions."""
+        create_question(question_text="Past first question", pub_date=-30, end_date=-29)
+        create_question(question_text="Past second question", pub_date=-5, end_date=-4)
         response = self.client.get(reverse('polls:index'))
         self.assertQuerysetEqual(
-        response.context['latest_question_list'],
-        ['<Question: Past question 2.>', '<Question: Past question 1.>']
+            response.context['latest_question_list'],
+            ['<Question: Past second question>', '<Question: Past first question>']
         )
+
 
 class QuestionDetailViewTests(TestCase):
 
@@ -154,88 +172,3 @@ class QuestionDetailViewTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
 
-# class QuestionModelTests(TestCase):
-
-
-# def test_is_published_with_future_question(self):
-# """
-# is_published() return False if current date is
-# before question's publication date.
-# """
-# time = timezone.now() + datetime.timedelta(days=10)
-# future_question = Question(pub_date=time)
-# self.assertIs(future_question.is_published(), False)
-
-# def test_is_published_with_old_question(self):
-# """
-# is_published() return Ture if current date is
-# after question's publication date.
-# """
-# time = timezone.now() - datetime.timedelta(days=1)
-# old_question = Question(pub_date=time)
-# self.assertIs(old_question.is_published(), True)
-
-# def test_is_published_with_present_question(self):
-# """
-# is_published() return Ture if current date is
-# on question's publication date.
-# """
-# time = timezone.now()
-# present_question = Question(pub_date=time)
-# self.assertIs(present_question.is_published(), True)
-
-# ## can_vote condition:
-# # pub_date < now < end_date == True
-# # pub_date = now(< end_date) == True
-# # pub_date > now == False
-# # now > end_date == False
-# # now = end_date == False
-# def test_can_vote_with_now_is_after_pub_date_and_before_end_date(self):
-# """
-# can_vote() return True if you're voting currently is between
-# pub_date and end_date.
-# """
-# pub_date = timezone.now() - datetime.timedelta(days=2)
-# end_date = timezone.now() + datetime.timedelta(days=10)
-# now = Question(pub_date=pub_date, end_date=end_date)
-# self.assertIs(now.can_vote(), True)
-
-# def test_can_vote_with_now_equal_to_pub_date(self):
-# """
-# can_vote() return True if you're voting currently is on
-# pub_date.
-# """
-# pub_date = timezone.now()
-# end_date = timezone.now() + datetime.timedelta(days=1)
-# now = Question(pub_date=pub_date, end_date=end_date)
-# self.assertIs(now.can_vote(), True)
-
-# def test_can_vote_with_now_is_before_pub_date(self):
-# """
-# can_vote() return False if you're voting currently is before
-# pub_date.
-# """
-# pub_date = timezone.now() - datetime.timedelta(days=1)
-# end_date = timezone.now()
-# before = Question(pub_date=pub_date, end_date=end_date)
-# self.assertIs(before.can_vote(), False)
-
-# def test_can_vote_with_now_is_after_end_date(self):
-# """
-# can_vote() return False if you're voting currently is after
-# end_date.
-# """
-# pub_date = timezone.now()
-# end_date = timezone.now() - datetime.timedelta(days=1)
-# before = Question(pub_date=pub_date, end_date=end_date)
-# self.assertIs(before.can_vote(), False)
-
-# def test_can_vote_with_now_is_equal_to_end_date(self):
-# """
-# can_vote() return False if you're voting currently is on
-# end_date.
-# """
-# pub_date = timezone.now() + datetime.timedelta(days=1)
-# end_date = timezone.now()
-# before = Question(pub_date=pub_date, end_date=end_date)
-# self.assertIs(before.can_vote(), False)
