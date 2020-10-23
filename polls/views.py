@@ -42,14 +42,14 @@ def login(request):
     if request.method == "POST":
         username = request.POST.get('username')
         password = request.POST.get('password')
-        try:
-            user = User.objects.get(username = username)
-            if user.password == password:
-                return HttpResponse("Yess")
-            else:
-                return HttpResponse("pass Nooo")
-        except User.DoesNotExist:
-            return HttpResponse("user Nooo")
+        user = User(username=username, password=password)
+        if user is not None:
+            return HttpResponseRedirect(reverse('polls:index'))
+        else:
+            messages.error(request, 'Wrong username or password try again!')
+            return render(request, 'polls/login.html')
+    else:
+        return render(request, 'polls/login.html')
     
 
 def display_login(request):
