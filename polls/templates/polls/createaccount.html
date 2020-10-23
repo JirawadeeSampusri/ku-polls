@@ -14,26 +14,24 @@
 
 <head>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">
   <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
   <title>Sign in</title>
+  {% comment %} <b>Kvent</b> {% endcomment %}
 </head>
 
 <body>
   
-  <div class="main">
-    <p1 class="topic">Log in</p1>
+  <div class="main" >
+    <p1 class="topic">Sign Up</p1>
     {% comment %} <p class="sign" align="center">Sign in</p> {% endcomment %}
-    <form class="form1" method="POST" action="{% url 'polls:login' %}" >
-    {% csrf_token %}
-      <input name="username" class="un " type="text" align="center" placeholder="Username"/>
-      <input name="password" class="pass" type="password" align="center" placeholder="Password"/>
-      <input class="submit" type="submit" align="center" value="Log In"/>      
-      <p class="forgot" align="center"><a>Don't have any account? </p>
-      <p class="forgot1" align="center"><a href="{% url 'polls:display_createaccount' %}">  Create one</p> 
-    </form>   
+    <form class="form1" method="POST" action="{% url 'polls:createaccount' %}">
+      {% csrf_token %}
+      <input name="username" class="un" type="text" align="center" placeholder="Username">
+      <input name="password" class="pass" type="password" align="center" placeholder="Password">  
+      <input class="submit" type="submit" align="center" value="Sign Up">     
+    </form>        
   </div>
      
 </body>

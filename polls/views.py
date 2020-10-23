@@ -6,6 +6,9 @@ from django.template import loader
 from django.views import generic
 from django.utils import timezone
 from django.contrib import messages
+from django.contrib.auth.models import User
+
+from .models import *
 
 class IndexView(generic.ListView):
     """Display the Index view that is a list of polls question."""
@@ -35,9 +38,35 @@ class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
 
-
 def login(request):
+    if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        try:
+            user = User.objects.get(username = username)
+            if user.password == password:
+                return HttpResponse("Yess")
+            else:
+                return HttpResponse("pass Nooo")
+        except User.DoesNotExist:
+            return HttpResponse("user Nooo")
+    
+
+def display_login(request):
     return render(request, 'polls/login.html')
+
+def display_createaccount(request):
+    return render(request, 'polls/createaccount.html')
+
+def createaccount(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = User( username = username, password = password)
+        user.save()
+    return redirect('polls:display_login')
+    
+    
 
 def index(request):
     """Display all of Question List."""
