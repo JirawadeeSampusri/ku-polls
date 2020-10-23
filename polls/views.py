@@ -36,6 +36,9 @@ class ResultsView(generic.DetailView):
     template_name = 'polls/results.html'
 
 
+def login(request):
+    return render(request, 'polls/login.html')
+
 def index(request):
     """Display all of Question List."""
     latest_question_list = Question.objects.order_by('-pub_date')[:]
