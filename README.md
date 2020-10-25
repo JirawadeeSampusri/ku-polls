@@ -13,4 +13,4 @@ Django application for conduction a poll or survey.
 
 [Iteration 2 Plan](../../wiki/Iteration%202%20Plan)
 
-[Iteration 3 Plan](../../wiki/Iteration%202%20Plan)
+[Iteration 3 Plan](../../wiki/Iteration%203%20Plan)
