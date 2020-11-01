@@ -1,18 +1,23 @@
-<html>
-<body style="background-color:powderblue;">
-    <p style="font-size:39px">
-        Poll Questions
-    </p>
-    {% if messages %}
-    <ul class="messages">
-    {% for msg in messages %}
-        <li class="{{msg.tags}}">{{ msg }}</li>
+{% load static %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <div class="error-msg">{{ message }}</div>
     {% endfor %}
-    </ul>
-    {% endif %}
-    {% if latest_question_list %}
+</ul>
+{% endif %}
+<p style="font-size:39px">
+        Poll Questions
+</p>
+<link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
+<h1 class="polls">Hi <i>{{ user.username }}</i><a>
+<h1 >{% if user.is_authenticated %}</i><a
+        href="{% url 'logout' %}" class="button" style="background-color:white;">   L o g o u t </a>{% else %}<a
+        href="{% url 'login' %}" class="button">Login</a>{% endif %}</h1>
+<div>
+    <h2>{% if latest_question_list %}
         <ul>
-        {% for question in latest_question_list %}
+             {% for question in latest_question_list %}
                 <p >{{ question.question_text }}</p>
                 {% if question.can_vote %}
                 <button>
@@ -23,14 +28,9 @@
                     <a href="{% url 'polls:results' question.id %}">result</a>
                 </button>
 
-        {% endfor %}
-
+              {% endfor %}
         </ul>
-    {% else %}
+        {% else %}
         <p>No polls are available.</p>
-    {% endif %}
-</body>
-</html>
-
-
-
+        {% endif %}</h2>
+</div>

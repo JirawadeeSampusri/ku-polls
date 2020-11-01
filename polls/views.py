@@ -1,14 +1,18 @@
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-from .models import Question, Choice
-from django.template import loader
 from django.views import generic
 from django.utils import timezone
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.db.models import F
 
-from .models import *
+from .models import Question, Choice
+
+import logging
+from polls.models import Vote
+
+
 
 class IndexView(generic.ListView):
     """Display the Index view that is a list of polls question."""
@@ -38,35 +42,6 @@ class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
 
-def login(request):
-    if request.method == "POST":
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = User(username=username, password=password)
-        if user is not None:
-            return HttpResponseRedirect(reverse('polls:index'))
-        else:
-            messages.error(request, 'Wrong username or password try again!')
-            return render(request, 'polls/login.html')
-    else:
-        return render(request, 'polls/login.html')
-    
-
-def display_login(request):
-    return render(request, 'polls/login.html')
-
-def display_createaccount(request):
-    return render(request, 'polls/createaccount.html')
-
-def createaccount(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = User( username = username, password = password)
-        user.save()
-    return redirect('polls:display_login')
-    
-    
 
 def index(request):
     """Display all of Question List."""
@@ -78,29 +53,48 @@ def index(request):
 def results(request, question_id):
     """Render to the result page."""
     question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'polls/results.html', {'question': question})
+    user_exist = Vote.objects.filter(question_id=question_id, user_id= request.user.id).exists()
+    return render(request, 'polls/results.html', {'question': question, 'user_exist': user_exist})
 
 def detail(request, question_id):
     """Render to the detail page."""
     question = get_object_or_404(Question, pk=question_id)
     return render(request, 'polls/detail.html', {'question': question})
-
+@login_required
 def vote(request, question_id):
-    """Vote function of application."""
+    """Vote function for polls app."""
     question = get_object_or_404(Question, pk=question_id)
+    # user can vote once per poll.
+    # if Vote.objects.filter(question_id=question_id, user_id=request.user.id).exists():
+    #     configure()
+    #     return render(request, 'polls/detail.html', {
+    #     'question': question,
+    #     'error_message': "You've already vote for this poll."
+    #     })
     try:
+        configure()
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
+        configure()
+
+        # Redisplay the question voting form.
         return render(request, 'polls/detail.html', {
             'question': question,
             'error_message': "You didn't select a choice.",
         })
     else:
-        selected_choice.votes += 1
-        selected_choice.save()
-        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
-    context = {'latest_question_list': latest_question_list, }
-    return HttpResponse(template.render(context, request))
+        if Vote.objects.filter(question_id=question_id, user_id=request.user.id).exists():
+            configure()
+            user_vote = question.vote_set.get(user=request.user)
+            user_vote.choice = selected_choice
+            user_vote.choice.votes += 1
+            user_vote.choice.save()
+            user_vote.save()
+        else:
+            configure()
+            selected_choice.vote_set.create(user=request.user, question=question)
+
+        return HttpResponseRedirect(reverse('polls:results', args=(question_id,)))
 
 def vote_for_poll(request, pk):
     """Check that polls the polls can vote or not."""
@@ -109,3 +103,24 @@ def vote_for_poll(request, pk):
         messages.error(request, "poll expires")
         return redirect('polls:index')
     return render(request, "polls/detail.html", {"question": q})
+
+def show_vote(request, pk):
+    question = get_object_or_404(Question, pk=pk)
+    user_vote = Vote.objects.filter(question_id=pk, user_id=request.user.id)
+    user_exist = Vote.objects.filter(question_id=pk, user_id=request.user.id).exists()
+
+def configure():
+    """Configure loggers and log handlers"""
+    filehandler = logging.FileHandler("demo.log")
+    filehandler.setLevel(logging.NOTSET)
+    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
+    filehandler.setFormatter(formatter)
+
+    root = logging.getLogger()
+    root.addHandler(filehandler)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.WARNING)
+    formatter = logging.Formatter(fmt='%(levelname)-8s %(name)s: %(message)s')
+    console_handler.setFormatter(formatter)
+    root.addHandler(console_handler)
