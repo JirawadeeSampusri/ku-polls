@@ -1,6 +1,7 @@
 import datetime
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 class Question(models.Model):
     """Create Question model in poll application."""
@@ -43,3 +44,17 @@ class Choice(models.Model):
     def __str__(self):
         """Return str of choice text."""
         return self.choice_text
+
+# class User(models.Model):
+#     """User's model"""
+#     username = models.CharField(max_length=254)
+#     password = models.CharField(max_length=254)
+
+
+class Vote(models.Model):
+    """Create a model to track user vote."""
+
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, blank=True, 
+                  on_delete=models.CASCADE, default=0)
