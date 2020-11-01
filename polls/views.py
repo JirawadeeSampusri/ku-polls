@@ -7,10 +7,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import F
 
-from .models import Question, Choice
+from .models import Question, Choice,Vote
 
 import logging
-from polls.models import Vote
+
+from django.db.migrations import loader
 
 
 
@@ -43,12 +44,12 @@ class ResultsView(generic.DetailView):
     template_name = 'polls/results.html'
 
 
-def index(request):
-    """Display all of Question List."""
-    latest_question_list = Question.objects.order_by('-pub_date')[:]
-    template = loader.get_template('polls/index.html')
-    context = {'latest_question_list': latest_question_list, }
-    return HttpResponse(template.render(context, request))
+# def index(request):
+#     """Display all of Question List."""
+#     latest_question_list = Question.objects.order_by('-pub_date')[:]
+#     template = loader.get_template('polls/index.html')
+#     context = {'latest_question_list': latest_question_list, }
+#     return HttpResponse(template.render(context, request))
 
 def results(request, question_id):
     """Render to the result page."""
