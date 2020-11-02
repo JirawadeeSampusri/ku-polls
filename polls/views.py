@@ -65,13 +65,6 @@ def detail(request, question_id):
 def vote(request, question_id):
     """Vote function for polls app."""
     question = get_object_or_404(Question, pk=question_id)
-    # user can vote once per poll.
-    # if Vote.objects.filter(question_id=question_id, user_id=request.user.id).exists():
-    #     configure()
-    #     return render(request, 'polls/detail.html', {
-    #     'question': question,
-    #     'error_message': "You've already vote for this poll."
-    #     })
     try:
         configure()
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
