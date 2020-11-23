@@ -66,11 +66,8 @@ def vote(request, question_id):
     """Vote function for polls app."""
     question = get_object_or_404(Question, pk=question_id)
     try:
-        configure()
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
-        configure()
-
         # Redisplay the question voting form.
         return render(request, 'polls/detail.html', {
             'question': question,
@@ -78,14 +75,12 @@ def vote(request, question_id):
         })
     else:
         if Vote.objects.filter(question_id=question_id, user_id=request.user.id).exists():
-            configure()
             user_vote = question.vote_set.get(user=request.user)
             user_vote.choice = selected_choice
             user_vote.choice.votes += 1
             user_vote.choice.save()
             user_vote.save()
         else:
-            configure()
             selected_choice.vote_set.create(user=request.user, question=question)
 
         return HttpResponseRedirect(reverse('polls:results', args=(question_id,)))
