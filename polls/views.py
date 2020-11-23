@@ -103,18 +103,3 @@ def show_vote(request, pk):
     user_vote = Vote.objects.filter(question_id=pk, user_id=request.user.id)
     user_exist = Vote.objects.filter(question_id=pk, user_id=request.user.id).exists()
 
-def configure():
-    """Configure loggers and log handlers"""
-    filehandler = logging.FileHandler("demo.log")
-    filehandler.setLevel(logging.NOTSET)
-    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
-    filehandler.setFormatter(formatter)
-
-    root = logging.getLogger()
-    root.addHandler(filehandler)
-
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.WARNING)
-    formatter = logging.Formatter(fmt='%(levelname)-8s %(name)s: %(message)s')
-    console_handler.setFormatter(formatter)
-    root.addHandler(console_handler)
